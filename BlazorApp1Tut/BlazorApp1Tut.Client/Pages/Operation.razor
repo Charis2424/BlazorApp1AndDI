@@ -1,0 +1,94 @@
+﻿@page "/operation";
+@using System.Text.Json
+@rendermode InteractiveAuto
+@inject HttpClient http
+<PageTitle>Operation</PageTitle>
+
+<h1>DI Instances Example</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (operationsData != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Transient</th>
+                <th>Scoped</th>
+                <th>Singleton</th>
+                <th>Instance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@(operationsData["Transient"].GetProperty("Guid").GetString())</td>
+                <td>@(operationsData["Scoped"].GetProperty("Guid").GetString())</td>
+                <td>@(operationsData["Singleton"].GetProperty("Guid").GetString())</td>
+                <td>@(operationsData["SingletonInstance"].GetProperty("Guid").GetString())</td>
+            </tr>
+        </tbody>
+    </table>    
+    
+    <h3>Service Table</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Transient</th>
+                <th>Scoped</th>
+                <th>Singleton</th>
+                <th>Instance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@(operationsData["Service"].GetProperty("TransientOperation").GetProperty("Guid").GetString())</td>
+                <td>@(operationsData["Service"].GetProperty("ScopedOperation").GetProperty("Guid").GetString())</td>
+                <td>@(operationsData["Service"].GetProperty("SingletonOperation").GetProperty("Guid").GetString())</td>
+                <td>@(operationsData["Service"].GetProperty("SingletonInstanceOperation").GetProperty("Guid").GetString())</td>
+            </tr>
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading...</p>
+}
+@code {
+    private dynamic operationsData;
+
+    // Deserialize the JSON response into the MyData class
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch data from the server
+        var response = await http.GetAsync("/api/operation");
+
+        // Check if the response is successful
+        if (response.IsSuccessStatusCode)
+        {
+            // Deserialize JSON response
+            operationsData = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+            if (operationsData != null)
+            {
+                // Display the dictionary in the console
+                foreach (var kvp in operationsData)
+                {
+                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("JSON data is null.");
+            }
+        }
+        else
+        {
+            // Handle error
+            // For example, you could display an error message or log the error
+            Console.WriteLine($"Error: {response.StatusCode}");
+        }
+    }
+
+}
+
